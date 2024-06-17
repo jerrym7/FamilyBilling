@@ -23,9 +23,7 @@ export default function CalendarScreen() {
         // Month format in calendar title. Formatting values: http://arshaw.com/xdate/#Formatting
         monthFormat={'yyyy MM'}
         // Handler which gets executed when visible month changes in calendar. Default = undefined
-        onMonthChange={month => {
-          console.log('month changed', month);
-        }}
+        onMonthChange={month => {}}
         // Hide month navigation arrows. Default = false
         hideArrows={true}
         // Replace default arrows with custom ones (direction can be 'left' or 'right')

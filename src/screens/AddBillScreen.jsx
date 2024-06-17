@@ -1,7 +1,13 @@
 import {StyleSheet, Text, View} from 'react-native';
-import React from 'react';
+import React, {useCallback} from 'react';
+import {useFocusEffect, useRoute} from '@react-navigation/native';
 
-export default function AddBillScreen() {
+/**
+ *
+ * @param {Object} param
+ * @returns
+ */
+export default function AddBillScreen({navigation}) {
   return (
     <View>
       <Text>Add Bill</Text>
