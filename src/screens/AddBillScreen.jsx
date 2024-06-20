@@ -1,6 +1,7 @@
-import {StyleSheet, Text, View} from 'react-native';
+import {StyleSheet, View} from 'react-native';
 import React, {useCallback} from 'react';
-import {useFocusEffect, useRoute} from '@react-navigation/native';
+import {useFocusEffect, useRoute, useTheme} from '@react-navigation/native';
+import {Text} from '../components/Default/Text';
 
 /**
  *
@@ -8,11 +9,19 @@ import {useFocusEffect, useRoute} from '@react-navigation/native';
  * @returns
  */
 export default function AddBillScreen({navigation}) {
+  const {colors} = useTheme();
+  const styles = makeStyles(colors);
   return (
-    <View>
+    <View style={styles.containerStyle}>
       <Text>Add Bill</Text>
     </View>
   );
 }
 
-const styles = StyleSheet.create({});
+const makeStyles = colors =>
+  StyleSheet.create({
+    containerStyle: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+  });

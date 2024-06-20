@@ -6,14 +6,18 @@ import AddBillScreen from '../screens/AddBillScreen';
 import CalendarScreen from '../screens/CalendarScreen';
 import BillingListScreen from '../screens/HistoryScreen';
 import {Dimensions, Platform, StyleSheet, View} from 'react-native';
-import {BottomNavigation, FAB, Portal} from 'react-native-paper';
-import {useCallback, useEffect, useState} from 'react';
+import {BottomNavigation, FAB, Portal, useTheme} from 'react-native-paper';
+import {useCallback, useContext, useEffect, useState} from 'react';
 import {useFocusEffect, useRoute} from '@react-navigation/native';
 import HistoryScreen from '../screens/HistoryScreen';
+import {ThemeContext} from '../context/ThemeContext';
+import {ThemeProp} from 'react-native-paper/lib/typescript/types';
 
 const Tab = createMaterialBottomTabNavigator();
 
 export default function BottomNavigationTabs({navigation, route}) {
+  const {colors} = useTheme();
+  const styles = makeStyles(colors);
   const [index, setIndex] = useState(0);
   const [isFABVisible, setIsFABVisible] = useState(true);
   const [routes] = useState([
@@ -23,6 +27,8 @@ export default function BottomNavigationTabs({navigation, route}) {
     {key: 'history', title: 'History', icon: 'history'},
     {key: 'account', title: 'Account', icon: 'account'},
   ]);
+  /** @type {ThemeProp}*/
+  const theme = useContext(ThemeContext).theme;
 
   const renderScene = BottomNavigation.SceneMap({
     home: MainScreen,
@@ -66,7 +72,8 @@ export default function BottomNavigationTabs({navigation, route}) {
         }}
         renderScene={renderScene}
         renderIcon={renderIcon}
-        activeColor="#4615b2"
+        activeColor={theme.colors.primary}
+        inactiveColor={theme.colors.disabled}
         barStyle={styles.bottomNavigation}
       />
 
@@ -76,7 +83,7 @@ export default function BottomNavigationTabs({navigation, route}) {
             style={styles.fabStyle}
             icon="plus"
             size="large"
-            color="white"
+            color={colors.background}
             onPress={() => {
               setIsFABVisible(false);
               navigation.navigate('AddBillScreen');
@@ -87,21 +94,27 @@ export default function BottomNavigationTabs({navigation, route}) {
     </View>
   );
 }
-const styles = StyleSheet.create({
-  fabStyle: {
-    position: 'absolute',
-    margin: 10,
-    right:
-      Platform.OS === 'android' ? Dimensions.get('window').width / 2.5 : '50%',
-    left:
-      Platform.OS === 'android' ? Dimensions.get('window').width / 2.5 : '50%',
-    bottom: 25,
-    width: 65,
-    height: 65,
-    justifyContent: 'center',
-    alignItems: 'center',
-    transform: Platform.OS === 'android' ? [] : [{translateX: -28}],
-    backgroundColor: '#4615b2', // Customize the color of the FAB here},
-    borderRadius: 35,
-  },
-});
+const makeStyles = colors => {
+  return StyleSheet.create({
+    fabStyle: {
+      position: 'absolute',
+      margin: 10,
+      right:
+        Platform.OS === 'android'
+          ? Dimensions.get('window').width / 2.5
+          : '50%',
+      left:
+        Platform.OS === 'android'
+          ? Dimensions.get('window').width / 2.5
+          : '50%',
+      bottom: 25,
+      width: 65,
+      height: 65,
+      justifyContent: 'center',
+      alignItems: 'center',
+      transform: Platform.OS === 'android' ? [] : [{translateX: -28}],
+      backgroundColor: colors.accent, // Customize the color of the FAB here},
+      borderRadius: 35,
+    },
+  });
+};

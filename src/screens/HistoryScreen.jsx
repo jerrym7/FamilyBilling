@@ -1,14 +1,10 @@
-import {Dimensions, StyleSheet, View} from 'react-native';
+import {Dimensions, StyleSheet, View, TouchableOpacity} from 'react-native';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {Agenda} from 'react-native-calendars';
 import CalendarEventCard from '../components/CalendarEventCard';
-import {Text} from 'react-native-paper';
+import {Text} from '../components/Default/Text';
 import moment from 'moment';
-import {
-  GestureHandlerRootView,
-  PanGestureHandler,
-  State,
-} from 'react-native-gesture-handler';
+import {useTheme, IconButton} from 'react-native-paper';
 
 const timeToString = time => {
   const date = new Date(time);
@@ -16,6 +12,8 @@ const timeToString = time => {
 };
 
 export default function HistoryScreen() {
+  const {colors} = useTheme();
+  const styles = makeStyle(colors);
   const agendaReference = useRef();
   const [allItems, setAllItems] = useState({});
   const [selectedDateString, setSelectedDateString] = useState('');
@@ -42,20 +40,22 @@ export default function HistoryScreen() {
     const today = moment().format('YYYY-MM-DD');
     setSelectedDateString(today);
   }, []);
+
   const loadItems = day => {
     setTimeout(() => {
       const newItems = {};
       Object.keys(allItems).forEach(key => {
         newItems[key] = allItems[key];
-      }, 1000);
+      });
       setAllItems(newItems);
-    });
+    }, 1000);
     setSelectedDateString(day.dateString);
   };
 
   const renderItem = useCallback(item => {
     return <CalendarEventCard item={item} />;
   }, []);
+
   useEffect(() => {
     const selectItems = allItems[selectedDateString];
     let totalAmount = 0;
@@ -65,99 +65,133 @@ export default function HistoryScreen() {
       });
     }
     setTotal(totalAmount);
-  }, [selectedDateString]);
+  }, [selectedDateString, allItems]);
 
-  const onSwipe = useCallback(event => {
-    const {translationX, state} = event.nativeEvent;
-    const screenWidth = Dimensions.get('window').width;
+  const goToPreviousDay = () => {
+    setSelectedDateString(
+      moment(selectedDateString).subtract(1, 'days').format('YYYY-MM-DD'),
+    );
+  };
 
-    if (state === State.END) {
-      if (translationX > screenWidth / 3) {
-        // Swipe right: go to the previous day
-        setSelectedDateString(
-          moment(selectedDateString).subtract(1, 'days').format('YYYY-MM-DD'),
-        );
-      } else if (translationX < -screenWidth / 3) {
-        // Swipe left: go to the next day
-        setSelectedDateString(
-          moment(selectedDateString).add(1, 'days').format('YYYY-MM-DD'),
-        );
-      }
-    }
-  });
+  const goToNextDay = () => {
+    setSelectedDateString(
+      moment(selectedDateString).add(1, 'days').format('YYYY-MM-DD'),
+    );
+  };
 
   return (
-    <GestureHandlerRootView style={styles.container}>
-      <PanGestureHandler onHandlerStateChange={onSwipe}>
-        <View style={{flex: 1}}>
-          <Agenda
-            ref={agendaReference}
-            theme={{
-              agendaKnobColor: '#757de8',
-              calendarBackground: '#fff',
-              selectedDayBackgroundColor: '#311b92',
-              selectedDayTextColor: '#fff',
-              todayTextColor: '#7e57c2',
-              dotColor: '#311b92',
-              selectedDotColor: '#fff',
-              agendaTodayColor: '#311b92',
-              monthTextColor: '#311b92',
-              textDayFontWeight: '300',
-              textMonthFontWeight: 'bold',
-              textDayHeaderFontWeight: '500',
-              textSectionTitleColor: '#311b92',
-              textDayFontSize: 16,
-              textMonthFontSize: 16,
-              textDayHeaderFontSize: 14,
-            }}
-            selected={selectedDateString}
-            items={allItems}
-            renderItem={renderItem}
-            renderDay={() => null}
-            loadItemsForMonth={loadItems}
-            pagingEnabled
-            scrollEnabled
-            showOnlySelectedDayItems
-            renderEmptyData={() => <CalendarEventCard />}
-          />
-          <View
-            style={[
-              styles.rowStyle,
-              styles.totalContainerStyle,
-              styles.totalContainerTextStyle,
-            ]}>
-            <View style={{flex: 1}}>
-              <Text style={styles.totalContainerTextStyle}>Your total: </Text>
-            </View>
-            <View>
-              <Text style={styles.totalContainerTextStyle}>
-                ${total.toFixed(2)}
-              </Text>
-            </View>
+    <View style={styles.containerStyle}>
+      <View style={styles.arrowContainer}>
+        <TouchableOpacity
+          style={{flexDirection: 'row', alignItems: 'center'}}
+          onPress={goToPreviousDay}>
+          <IconButton icon="chevron-left" size={30} />
+          <Text>Prev</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={{flexDirection: 'row', alignItems: 'center'}}
+          onPress={goToNextDay}>
+          <Text>Next</Text>
+          <IconButton icon="chevron-right" size={30} />
+        </TouchableOpacity>
+      </View>
+      <Agenda
+        ref={agendaReference}
+        theme={styles.agendaStyle}
+        selected={selectedDateString}
+        items={allItems}
+        renderItem={renderItem}
+        renderDay={() => null}
+        loadItemsForMonth={loadItems}
+        showOnlySelectedDayItems
+        renderEmptyData={() => (
+          <View style={styles.emptyDate}>
+            <Text>No transactions</Text>
           </View>
+        )}
+        style={{backgroundColor: colors.background}}
+        rowHasChanged={(r1, r2) => r1.name !== r2.name}
+      />
+      <View
+        style={[
+          styles.rowStyle,
+          styles.totalContainerStyle,
+          styles.totalContainerTextStyle,
+        ]}>
+        <View style={{flex: 1}}>
+          <Text style={styles.totalContainerTextStyle}>Your total: </Text>
         </View>
-      </PanGestureHandler>
-    </GestureHandlerRootView>
+        <View>
+          <Text style={styles.totalContainerTextStyle}>
+            ${total.toFixed(2)}
+          </Text>
+        </View>
+      </View>
+    </View>
   );
 }
 
-const styles = StyleSheet.create({
-  screenStyle: {
-    width: Dimensions.get('window').width,
-    height: Dimensions.get('window').height,
-  },
-  rowStyle: {
-    flexDirection: 'row',
-  },
-  totalContainerStyle: {
-    paddingLeft: 20,
-    paddingRight: 20,
-    paddingBottom: 5,
-    paddingTop: 5,
-  },
-  totalContainerTextStyle: {
-    fontSize: 25,
-    fontWeight: 'bold',
-    color: '#311b92',
-  },
-});
+const makeStyle = colors =>
+  StyleSheet.create({
+    containerStyle: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    screenStyle: {
+      width: Dimensions.get('window').width,
+      height: Dimensions.get('window').height,
+    },
+    rowStyle: {
+      flexDirection: 'row',
+    },
+    totalContainerStyle: {
+      paddingLeft: 20,
+      paddingRight: 20,
+      paddingBottom: 5,
+      paddingTop: 5,
+    },
+    totalContainerTextStyle: {
+      fontSize: 25,
+      fontWeight: 'bold',
+      color: colors.text,
+      backgroundColor: colors.background,
+    },
+    agendaStyle: {
+      backgroundColor: colors.background,
+      calendarBackground: colors.background,
+      textSectionTitleColor: colors.secondaryDark,
+      selectedDayBackgroundColor: colors.primary,
+      selectedDayTextColor: colors.text,
+      todayTextColor: colors.primary,
+      dayTextColor: colors.primaryDark,
+      textDisabledColor: colors.disabled,
+      dotColor: colors.primary,
+      selectedDotColor: colors.text,
+      arrowColor: colors.primary,
+      monthTextColor: colors.primary,
+      indicatorColor: colors.primary,
+      textDayFontFamily: 'monospace',
+      textMonthFontFamily: 'monospace',
+      textDayHeaderFontFamily: 'monospace',
+      textDayFontWeight: '300',
+      textMonthFontWeight: 'bold',
+      textDayHeaderFontWeight: '300',
+      textDayFontSize: 16,
+      textMonthFontSize: 16,
+      textDayHeaderFontSize: 16,
+      agendaKnobColor: colors.primary, // Agenda knob color
+      agendaTodayColor: colors.secondaryLight, // Today's color in agenda
+      reservationsBackgroundColor: colors.background,
+    },
+    emptyDate: {
+      height: 80, // Ensure empty dates have a height for better scrolling
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    arrowContainer: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      paddingHorizontal: 10,
+    },
+  });

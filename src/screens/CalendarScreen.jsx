@@ -1,11 +1,18 @@
-import {StyleSheet, Text, View} from 'react-native';
+import {StyleSheet, View, StyleProp, ViewStyle} from 'react-native';
 import React from 'react';
 import {Calendar} from 'react-native-calendars';
+import {Text} from '../components/Default/Text';
+import {useTheme} from 'react-native-paper';
 
 export default function CalendarScreen() {
+  const {colors} = useTheme();
+  /** @type StyleProp<ViewStyle> */
+  const styles = makeStyles(colors);
   return (
-    <View>
+    <View style={styles.containerStyle}>
       <Calendar
+        theme={styles.calendarStyle}
+        style={{backgroundColor: colors.background}}
         // Initially visible month. Default = now
         initialDate={'2012-03-01'}
         // Minimum date that can be selected, dates before minDate will be grayed out. Default = undefined
@@ -60,4 +67,40 @@ export default function CalendarScreen() {
   );
 }
 
-const styles = StyleSheet.create({});
+/**
+ *
+ * @param {Object} colors
+ * @returns
+ */
+const makeStyles = colors => {
+  return StyleSheet.create({
+    containerStyle: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    calendarStyle: {
+      backgroundColor: colors.background,
+      calendarBackground: colors.background,
+      textSectionTitleColor: colors.secondaryDark,
+      selectedDayBackgroundColor: colors.primary,
+      selectedDayTextColor: colors.text,
+      todayTextColor: colors.primary,
+      dayTextColor: colors.primaryDark,
+      textDisabledColor: colors.disabled,
+      dotColor: colors.primary,
+      selectedDotColor: colors.text,
+      arrowColor: colors.primaryLight,
+      monthTextColor: colors.primary,
+      indicatorColor: colors.primary,
+      textDayFontFamily: 'monospace',
+      textMonthFontFamily: 'monospace',
+      textDayHeaderFontFamily: 'monospace',
+      textDayFontWeight: '300',
+      textMonthFontWeight: 'bold',
+      textDayHeaderFontWeight: '300',
+      textDayFontSize: 16,
+      textMonthFontSize: 16,
+      textDayHeaderFontSize: 16,
+    },
+  });
+};
